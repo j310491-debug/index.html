@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>注音符號視覺比對練習 (手機排版優化版)</title>
+    <title>注音符號視覺比對練習 (生活短句版)</title>
     <style>
         /* 整體介面與視覺化設定 */
         body {
@@ -11,7 +11,6 @@
             background-color: #f0f4f8;
             margin: 0; padding: 10px;
             display: flex; flex-direction: column; align-items: center;
-            /* 使用 dvh 確保精準貼合手機實際可視範圍 */
             height: 100dvh; box-sizing: border-box;
             touch-action: manipulation; user-select: none;
         }
@@ -30,52 +29,51 @@
             display: flex; flex-direction: column; align-items: center;
             background-color: #e3f2fd; border-radius: 15px; padding: 15px 10px;
             border: 4px solid #90caf9;
-            flex-shrink: 0; /* 確保題目區不會被過度擠壓 */
+            flex-shrink: 0; 
         }
 
-        /* 圖片容器：設定彈性高度限制 */
         #question-img-container { 
-            height: 12vh; min-height: 80px; max-height: 120px;
+            height: 10vh; min-height: 60px; max-height: 90px;
             display: flex; justify-content: center; align-items: center;
-            margin-bottom: 10px; 
+            margin-bottom: 5px; 
         }
 
+        /* ★ 新增 flex-wrap: wrap，讓長句子可以自動換行 ★ */
         #word-display-container {
-            display: flex; justify-content: center; gap: 20px;
+            display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; width: 100%;
         }
 
-        .char-group { display: flex; align-items: center; }
+        .char-group { display: flex; align-items: center; margin-bottom: 10px;}
 
         .char-text {
-            font-size: 4rem; font-weight: bold; color: #1565c0;
-            margin-right: 10px; line-height: 1;
+            font-size: 3.5rem; font-weight: bold; color: #1565c0;
+            margin-right: 8px; line-height: 1;
         }
 
-        /* 雙欄位注音排版 (左主注音、右聲調) */
-        .zhuyin-layout { display: flex; gap: 4px; height: 100%; }
-        .zhuyin-main { display: flex; flex-direction: column; justify-content: center; gap: 4px; }
-        .zhuyin-tone { display: flex; flex-direction: column; gap: 4px; justify-content: flex-end; padding-bottom: 5px; }
+        /* 雙欄位注音排版 */
+        .zhuyin-layout { display: flex; gap: 3px; height: 100%; }
+        .zhuyin-main { display: flex; flex-direction: column; justify-content: center; gap: 3px; }
+        .zhuyin-tone { display: flex; flex-direction: column; gap: 3px; justify-content: flex-end; padding-bottom: 4px; }
 
         .slot {
-            width: 40px; height: 40px;
+            width: 35px; height: 35px;
             border: 3px dashed #90caf9; border-radius: 8px;
             display: flex; justify-content: center; align-items: center;
-            font-size: 1.6rem; font-weight: bold; color: #bbdefb;
+            font-size: 1.4rem; font-weight: bold; color: #bbdefb;
             background-color: #ffffff;
         }
         .slot.filled { border-style: solid; border-color: #4caf50; background-color: #e8f5e9; color: #2e7d32; }
         .slot.target { border-color: #ff9800; background-color: #fff3e0; color: #ffb74d; }
 
-        /* 虛擬鍵盤區：加入捲動功能 */
+        /* 虛擬鍵盤區 */
         #keyboard-area { 
             flex: 1; display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; align-content: flex-start; 
-            overflow-y: auto; /* 允許上下滑動 */
-            padding-bottom: 10px; /* 底部預留空間 */
+            overflow-y: auto; padding-bottom: 10px; 
         }
         
         .key-btn {
-            width: calc(14% - 6px); min-width: 38px; height: 48px;
-            font-size: 1.5rem; font-weight: bold; color: #333;
+            width: calc(14% - 6px); min-width: 35px; height: 45px;
+            font-size: 1.4rem; font-weight: bold; color: #333;
             background-color: #f5f5f5; border: 2px solid #e0e0e0; border-radius: 8px;
             cursor: pointer; box-shadow: 0 4px 0 #bdbdbd; transition: 0.1s;
             display: flex; justify-content: center; align-items: center;
@@ -83,15 +81,15 @@
         .key-btn:active { transform: translateY(4px); box-shadow: 0 0 0 #bdbdbd; }
         
         .space-btn {
-            width: 90%; max-width: 400px; height: 55px;
-            margin-top: 5px; font-size: 1.5rem; background-color: #e0e0e0;
+            width: 90%; max-width: 400px; height: 50px;
+            margin-top: 5px; font-size: 1.4rem; background-color: #e0e0e0;
         }
 
         /* 國字選擇區 */
         #selection-area { flex: 1; display: none; flex-direction: column; justify-content: center; align-items: center; gap: 15px; }
         .selection-instruction { font-size: 1.5rem; font-weight: bold; color: #f57c00; }
         .word-btn {
-            width: 80%; padding: 15px; font-size: 2.5rem; font-weight: bold;
+            width: 90%; padding: 15px; font-size: 2.2rem; font-weight: bold;
             background-color: #fff9c4; border: 4px solid #fbc02d; border-radius: 15px;
             cursor: pointer; box-shadow: 0 5px 0 #f57f17; color: #333; transition: 0.1s;
         }
@@ -107,13 +105,13 @@
         .shake-error { animation: shake 0.4s; border-color: #f44336 !important; background-color: #ffebee !important; }
         @keyframes shake { 0%, 100% {transform: translateX(0);} 25% {transform: translateX(-10px);} 75% {transform: translateX(10px);} }
 
-        /* === 手機版專屬縮放設定 === */
+        /* 手機版專屬縮放設定 */
         @media (max-width: 400px) {
-            .char-text { font-size: 3rem; margin-right: 5px; }
-            .slot { width: 32px; height: 32px; font-size: 1.3rem; }
-            .key-btn { height: 42px; font-size: 1.3rem; }
-            .space-btn { height: 48px; font-size: 1.2rem; }
-            #question-img-container { height: 10vh; min-height: 60px; }
+            .char-text { font-size: 2.8rem; margin-right: 5px; }
+            .slot { width: 28px; height: 28px; font-size: 1.1rem; }
+            .key-btn { height: 40px; font-size: 1.2rem; }
+            .space-btn { height: 45px; font-size: 1.2rem; }
+            #question-img-container { height: 8vh; min-height: 50px; }
         }
     </style>
 </head>
@@ -134,7 +132,7 @@
 
         <!-- 下半部：國字選擇區 -->
         <div id="selection-area">
-            <div class="selection-instruction">請選出正確的國字：</div>
+            <div class="selection-instruction">請選出正確的句子：</div>
             <div id="word-options" style="display: flex; flex-direction: column; width: 100%; gap: 15px; align-items: center;"></div>
         </div>
     </div>
@@ -144,19 +142,19 @@
 
     <script>
         // ==========================================
-        // 老師出題區 (極簡題庫引擎)
+        // 老師出題區：10 題生活短句題庫
         // ==========================================
         const rawQuestions = [
-            ["學校", "ㄒㄩㄝˊ ㄒㄧㄠˋ", "🏫"],
-            ["老師", "ㄌㄠˇ ㄕ", "👩‍🏫"],
-            ["同學", "ㄊㄨㄥˊ ㄒㄩㄝˊ", "🧑‍🎓"],
-            ["書包", "ㄕㄨ ㄅㄠ", "🎒"],
-            ["鉛筆", "ㄑㄧㄢ ㄅㄧˇ", "✏️"],
-            ["爸爸", "ㄅㄚˋ ㄅㄚ˙", "👨"],
-            ["媽媽", "ㄇㄚ ㄇㄚ˙", "👩"],
-            ["衣服", "ㄧ ㄈㄨˊ", "👕"],
-            ["褲子", "ㄎㄨˋ ㄗ˙", "👖"],
-            ["水果", "ㄕㄨㄟˇ ㄍㄨㄛˇ", "🍎"]
+            ["爸爸辛苦了", "ㄅㄚˋ ㄅㄚ˙ ㄒㄧㄣ ㄎㄨˇ ㄌㄜ˙", "👨"],
+            ["謝謝爸爸", "ㄒㄧㄝˋ ㄒㄧㄝ˙ ㄅㄚˋ ㄅㄚ˙", "💖"],
+            ["媽媽辛苦了", "ㄇㄚ ㄇㄚ˙ ㄒㄧㄣ ㄎㄨˇ ㄌㄜ˙", "👩"],
+            ["謝謝媽媽", "ㄒㄧㄝˋ ㄒㄧㄝ˙ ㄇㄚ ㄇㄚ˙", "💕"],
+            ["今天很熱", "ㄐㄧㄣ ㄊㄧㄢ ㄏㄣˇ ㄖㄜˋ", "☀️"],
+            ["今天下雨", "ㄐㄧㄣ ㄊㄧㄢ ㄒㄧㄚˋ ㄩˇ", "🌧️"],
+            ["今天星期一", "ㄐㄧㄣ ㄊㄧㄢ ㄒㄧㄥ ㄑㄧˊ ㄧ", "📅"],
+            ["今天星期二", "ㄐㄧㄣ ㄊㄧㄢ ㄒㄧㄥ ㄑㄧˊ ㄦˋ", "🗓️"],
+            ["我愛你", "ㄨㄛˇ ㄞˋ ㄋㄧˇ", "🥰"],
+            ["早安你好", "ㄗㄠˇ ㄢ ㄋㄧˇ ㄏㄠˇ", "🌅"]
         ];
 
         const zhuyinSymbols = [
@@ -325,6 +323,7 @@
             keyboardArea.style.display = 'none';
             selectionArea.style.display = 'flex';
             
+            // 隱藏原本的句子
             wordDisplayContainer.innerHTML = '<div class="char-text" style="font-size: 4rem;">???</div>';
 
             let options = [currentQuestion.fullWord];
