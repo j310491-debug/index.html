@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>注音符號視覺比對練習 (字體優化版)</title>
+    <title>注音符號視覺比對練習 (動態聚焦版)</title>
     <style>
-        /* 整體介面與視覺化設定：加入繁體中文標準字體 */
+        /* 整體介面與視覺化設定 */
         body {
             font-family: 'Microsoft JhengHei', 'PingFang TC', 'Heiti TC', 'Segoe UI', Tahoma, sans-serif;
             background-color: #f0f4f8;
@@ -24,7 +24,6 @@
             flex: 1; overflow: hidden;
         }
 
-        /* 題目顯示區 */
         #question-area {
             display: flex; flex-direction: column; align-items: center;
             background-color: #e3f2fd; border-radius: 15px; padding: 15px 10px;
@@ -35,21 +34,41 @@
         #question-img-container { 
             height: 10vh; min-height: 60px; max-height: 90px;
             display: flex; justify-content: center; align-items: center;
-            margin-bottom: 5px; 
+            margin-bottom: 10px; 
         }
 
         #word-display-container {
-            display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; width: 100%;
+            display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; width: 100%;
+            padding-top: 15px; /* 預留浮起空間 */
         }
 
-        .char-group { display: flex; align-items: center; margin-bottom: 10px;}
+        /* ★ 全新：國字群組與浮起特效 ★ */
+        .char-group { 
+            display: flex; align-items: center; margin-bottom: 10px;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* 平滑彈性動畫 */
+            border-radius: 15px;
+            padding: 5px;
+        }
+
+        /* 當這個字是目前的目標時套用的樣式 */
+        .char-group.active-char {
+            transform: scale(1.25) translateY(-10px);
+            background-color: #fff8e1;
+            box-shadow: 0 8px 15px rgba(255, 152, 0, 0.2);
+            z-index: 10;
+        }
 
         .char-text {
             font-size: 3.5rem; font-weight: bold; color: #1565c0;
             margin-right: 8px; line-height: 1;
+            transition: color 0.3s;
+        }
+        
+        /* 目標國字的顏色變化 */
+        .active-char .char-text {
+            color: #ef6c00;
         }
 
-        /* 雙欄位注音排版 */
         .zhuyin-layout { display: flex; gap: 3px; height: 100%; }
         .zhuyin-main { display: flex; flex-direction: column; justify-content: center; gap: 3px; }
         .zhuyin-tone { display: flex; flex-direction: column; gap: 3px; justify-content: flex-end; padding-bottom: 4px; }
@@ -62,9 +81,10 @@
             background-color: #ffffff;
         }
         .slot.filled { border-style: solid; border-color: #4caf50; background-color: #e8f5e9; color: #2e7d32; }
-        .slot.target { border-color: #ff9800; background-color: #fff3e0; color: #ffb74d; }
+        
+        /* 讓目標注音格的橘色更明顯一點 */
+        .slot.target { border: 4px solid #ff9800; background-color: #fff3e0; color: #ffb74d; }
 
-        /* 虛擬鍵盤區 */
         #keyboard-area { 
             flex: 1; display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; align-content: flex-start; 
             overflow-y: auto; padding-bottom: 10px; 
@@ -84,7 +104,6 @@
             margin-top: 5px; font-size: 1.4rem; background-color: #e0e0e0;
         }
 
-        /* 國字選擇區 */
         #selection-area { flex: 1; display: none; flex-direction: column; justify-content: center; align-items: center; gap: 15px; }
         .selection-instruction { font-size: 1.5rem; font-weight: bold; color: #f57c00; }
         .word-btn {
@@ -94,7 +113,27 @@
         }
         .word-btn:active { transform: translateY(5px); box-shadow: 0 0 0 #f57f17; }
 
-        /* 視覺動畫 */
+        /* ★ 全新：讚圖示回饋動畫 ★ */
+        #thumbs-up-feedback {
+            position: fixed; top: 40%; left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            font-size: 10rem;
+            z-index: 200;
+            opacity: 0;
+            pointer-events: none; /* 避免擋住點擊 */
+        }
+
+        .show-thumbs-up {
+            animation: popUpThumbs 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popUpThumbs {
+            0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+            30% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+            70% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(2); opacity: 0; }
+        }
+
         #visual-feedback {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             display: none; justify-content: center; align-items: center;
@@ -104,7 +143,6 @@
         .shake-error { animation: shake 0.4s; border-color: #f44336 !important; background-color: #ffebee !important; }
         @keyframes shake { 0%, 100% {transform: translateX(0);} 25% {transform: translateX(-10px);} 75% {transform: translateX(10px);} }
 
-        /* 手機版專屬縮放設定 */
         @media (max-width: 400px) {
             .char-text { font-size: 2.8rem; margin-right: 5px; }
             .slot { width: 28px; height: 28px; font-size: 1.1rem; }
@@ -136,7 +174,8 @@
         </div>
     </div>
 
-    <!-- 視覺回饋覆蓋層 -->
+    <!-- 視覺回饋與過場動畫 -->
+    <div id="thumbs-up-feedback">👍</div>
     <div id="visual-feedback"></div>
 
     <script>
@@ -179,7 +218,6 @@
                     if (zySymbols.length > 0 && !['ˊ', 'ˇ', 'ˋ', '˙'].includes(zySymbols[zySymbols.length - 1])) {
                         zySymbols.push('空白');
                     }
-                    
                     characters.push({ char: char, zhuyin: zySymbols });
                 }
                 return { img, fullWord, characters };
@@ -194,6 +232,7 @@
         let currentQuestion = null;
         let flatTargetSequence = []; 
         let currentZhuyinIndex = 0; 
+        let charIndexMap = []; // ★ 新增：追蹤每個注音屬於第幾個國字
         
         const qImgContainer = document.getElementById('question-img-container');
         const wordDisplayContainer = document.getElementById('word-display-container');
@@ -202,6 +241,7 @@
         const selectionArea = document.getElementById('selection-area');
         const wordOptions = document.getElementById('word-options');
         const visualFeedback = document.getElementById('visual-feedback');
+        const thumbsUpFeedback = document.getElementById('thumbs-up-feedback');
 
         function playZhuyinAudio(symbol) {
             if ('speechSynthesis' in window) {
@@ -221,10 +261,7 @@
             zhuyinSymbols.forEach(symbol => {
                 const btn = document.createElement('button');
                 btn.className = 'key-btn';
-                
-                // ★ 視覺替換邏輯：如果遇到注音「ㄧ」，強制顯示為中文橫線「一」 ★
                 btn.innerText = (symbol === 'ㄧ') ? '一' : symbol;
-                
                 btn.onclick = () => handleZhuyinClick(symbol);
                 normalKeysArea.appendChild(btn);
             });
@@ -235,6 +272,7 @@
             selectionArea.style.display = 'none';
             currentZhuyinIndex = 0;
             flatTargetSequence = [];
+            charIndexMap = []; // 重置對照表
             wordDisplayContainer.innerHTML = '';
 
             const randomIndex = Math.floor(Math.random() * questionBank.length);
@@ -247,10 +285,12 @@
             }
 
             let globalSlotIndex = 0;
+            let currentCharGroupIndex = 0; // ★ 新增：目前建立到第幾個國字
 
             currentQuestion.characters.forEach(charObj => {
                 const charGroup = document.createElement('div');
                 charGroup.className = 'char-group';
+                charGroup.id = `char-group-${currentCharGroupIndex}`; // 賦予 ID 方便選取
 
                 const charText = document.createElement('div');
                 charText.className = 'char-text';
@@ -261,19 +301,18 @@
                 
                 const mainCol = document.createElement('div');
                 mainCol.className = 'zhuyin-main';
-                
                 const toneCol = document.createElement('div');
                 toneCol.className = 'zhuyin-tone';
 
                 charObj.zhuyin.forEach(zy => {
                     const isTone = toneSymbols.includes(zy);
                     flatTargetSequence.push(zy); 
+                    charIndexMap.push(currentCharGroupIndex); // 記錄這個注音屬於哪個國字
 
                     const slot = document.createElement('div');
                     slot.className = 'slot';
                     slot.id = `slot-${globalSlotIndex}`;
                     
-                    // ★ 視覺替換邏輯：空位上的提示也轉為中文橫線「一」 ★
                     if (zy === '空白') {
                         slot.innerText = '␣';
                     } else if (zy === 'ㄧ') {
@@ -301,7 +340,34 @@
                 charGroup.appendChild(charText);
                 charGroup.appendChild(zhuyinLayout);
                 wordDisplayContainer.appendChild(charGroup);
+                
+                currentCharGroupIndex++;
             });
+
+            // 遊戲開始，讓第一個字放大浮起
+            updateActiveCharacterFocus(currentZhuyinIndex);
+        }
+
+        // ★ 新增：更新浮起特效的函數 ★
+        function updateActiveCharacterFocus(zhuyinIdx) {
+            // 先清除畫面上所有國字的浮起效果
+            document.querySelectorAll('.char-group').forEach(el => {
+                el.classList.remove('active-char');
+            });
+            // 找到目前該打的注音屬於哪個國字，並將該國字浮起
+            if (zhuyinIdx < charIndexMap.length) {
+                const targetCharIndex = charIndexMap[zhuyinIdx];
+                const activeGroup = document.getElementById(`char-group-${targetCharIndex}`);
+                if (activeGroup) activeGroup.classList.add('active-char');
+            }
+        }
+
+        // ★ 新增：播放讚動畫的函數 ★
+        function triggerThumbsUp() {
+            thumbsUpFeedback.classList.remove('show-thumbs-up');
+            // 觸發重繪 (Reflow) 才能重複播放動畫
+            void thumbsUpFeedback.offsetWidth; 
+            thumbsUpFeedback.classList.add('show-thumbs-up');
         }
 
         function handleZhuyinClick(clickedSymbol) {
@@ -309,12 +375,12 @@
 
             const targetSymbol = flatTargetSequence[currentZhuyinIndex];
             const currentSlot = document.getElementById(`slot-${currentZhuyinIndex}`);
+            const previousCharIndex = charIndexMap[currentZhuyinIndex]; // 打字前的國字位置
 
             if (clickedSymbol === targetSymbol) {
                 currentSlot.classList.remove('target');
                 currentSlot.classList.add('filled');
                 
-                // ★ 視覺替換邏輯：學生點對後，格子內填入的也是中文橫線「一」 ★
                 if (clickedSymbol === '空白') {
                     currentSlot.innerText = '';
                 } else if (clickedSymbol === 'ㄧ') {
@@ -326,9 +392,20 @@
                 currentZhuyinIndex++;
 
                 if (currentZhuyinIndex < flatTargetSequence.length) {
+                    const newCharIndex = charIndexMap[currentZhuyinIndex]; // 打字後的國字位置
+                    
+                    // ★ 判斷：如果換到下一個國字了，代表前一個字完成了！★
+                    if (newCharIndex > previousCharIndex) {
+                        triggerThumbsUp(); // 彈出讚的圖示
+                    }
+
                     document.getElementById(`slot-${currentZhuyinIndex}`).classList.add('target');
+                    updateActiveCharacterFocus(currentZhuyinIndex); // 讓下一個字浮起
                 } else {
-                    setTimeout(enterSelectionPhase, 500);
+                    // 整句打完時，也給一個讚！
+                    triggerThumbsUp();
+                    // 稍微延遲一點進入選字畫面，讓學生看完讚的動畫
+                    setTimeout(enterSelectionPhase, 1200); 
                 }
             } else {
                 const qArea = document.getElementById('question-area');
