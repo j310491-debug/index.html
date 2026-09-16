@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>注音符號視覺比對練習 (動態聚焦版)</title>
+    <title>注音符號視覺比對練習 (情境圖示版)</title>
     <style>
         /* 整體介面與視覺化設定 */
         body {
@@ -39,18 +39,17 @@
 
         #word-display-container {
             display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; width: 100%;
-            padding-top: 15px; /* 預留浮起空間 */
+            padding-top: 15px; 
         }
 
-        /* ★ 全新：國字群組與浮起特效 ★ */
+        /* 國字群組與浮起特效 */
         .char-group { 
             display: flex; align-items: center; margin-bottom: 10px;
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* 平滑彈性動畫 */
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
             border-radius: 15px;
             padding: 5px;
         }
 
-        /* 當這個字是目前的目標時套用的樣式 */
         .char-group.active-char {
             transform: scale(1.25) translateY(-10px);
             background-color: #fff8e1;
@@ -64,7 +63,6 @@
             transition: color 0.3s;
         }
         
-        /* 目標國字的顏色變化 */
         .active-char .char-text {
             color: #ef6c00;
         }
@@ -81,8 +79,6 @@
             background-color: #ffffff;
         }
         .slot.filled { border-style: solid; border-color: #4caf50; background-color: #e8f5e9; color: #2e7d32; }
-        
-        /* 讓目標注音格的橘色更明顯一點 */
         .slot.target { border: 4px solid #ff9800; background-color: #fff3e0; color: #ffb74d; }
 
         #keyboard-area { 
@@ -113,14 +109,14 @@
         }
         .word-btn:active { transform: translateY(5px); box-shadow: 0 0 0 #f57f17; }
 
-        /* ★ 全新：讚圖示回饋動畫 ★ */
+        /* 讚圖示回饋動畫 */
         #thumbs-up-feedback {
             position: fixed; top: 40%; left: 50%;
             transform: translate(-50%, -50%) scale(0);
             font-size: 10rem;
             z-index: 200;
             opacity: 0;
-            pointer-events: none; /* 避免擋住點擊 */
+            pointer-events: none;
         }
 
         .show-thumbs-up {
@@ -180,19 +176,19 @@
 
     <script>
         // ==========================================
-        // 老師出題區：10 題生活短句題庫
+        // 老師出題區：★ 更新為更具情境的組合圖示 ★
         // ==========================================
         const rawQuestions = [
-            ["爸爸辛苦了", "ㄅㄚˋ ㄅㄚ˙ ㄒㄧㄣ ㄎㄨˇ ㄌㄜ˙", "👨"],
-            ["謝謝爸爸", "ㄒㄧㄝˋ ㄒㄧㄝ˙ ㄅㄚˋ ㄅㄚ˙", "💖"],
-            ["媽媽辛苦了", "ㄇㄚ ㄇㄚ˙ ㄒㄧㄣ ㄎㄨˇ ㄌㄜ˙", "👩"],
-            ["謝謝媽媽", "ㄒㄧㄝˋ ㄒㄧㄝ˙ ㄇㄚ ㄇㄚ˙", "💕"],
-            ["今天很熱", "ㄐㄧㄣ ㄊㄧㄢ ㄏㄣˇ ㄖㄜˋ", "☀️"],
-            ["今天下雨", "ㄐㄧㄣ ㄊㄧㄢ ㄒㄧㄚˋ ㄩˇ", "🌧️"],
-            ["今天星期一", "ㄐㄧㄣ ㄊㄧㄢ ㄒㄧㄥ ㄑㄧˊ ㄧ", "📅"],
-            ["今天星期二", "ㄐㄧㄣ ㄊㄧㄢ ㄒㄧㄥ ㄑㄧˊ ㄦˋ", "🗓️"],
-            ["我愛你", "ㄨㄛˇ ㄞˋ ㄋㄧˇ", "🥰"],
-            ["早安你好", "ㄗㄠˇ ㄢ ㄋㄧˇ ㄏㄠˇ", "🌅"]
+            ["爸爸辛苦了", "ㄅㄚˋ ㄅㄚ˙ ㄒㄧㄣ ㄎㄨˇ ㄌㄜ˙", "👨‍💼💦"],
+            ["謝謝爸爸", "ㄒㄧㄝˋ ㄒㄧㄝ˙ ㄅㄚˋ ㄅㄚ˙", "🫂👨"],
+            ["媽媽辛苦了", "ㄇㄚ ㄇㄚ˙ ㄒㄧㄣ ㄎㄨˇ ㄌㄜ˙", "🧹😓"],
+            ["謝謝媽媽", "ㄒㄧㄝˋ ㄒㄧㄝ˙ ㄇㄚ ㄇㄚ˙", "🫂👩"],
+            ["今天很熱", "ㄐㄧㄣ ㄊㄧㄢ ㄏㄣˇ ㄖㄜˋ", "🥵☀️"],
+            ["今天下雨", "ㄐㄧㄣ ㄊㄧㄢ ㄒㄧㄚˋ ㄩˇ", "☔🌧️"],
+            ["今天星期一", "ㄐㄧㄣ ㄊㄧㄢ ㄒㄧㄥ ㄑㄧˊ ㄧ", "📅1️⃣"],
+            ["今天星期二", "ㄐㄧㄣ ㄊㄧㄢ ㄒㄧㄥ ㄑㄧˊ ㄦˋ", "📅2️⃣"],
+            ["我愛你", "ㄨㄛˇ ㄞˋ ㄋㄧˇ", "🤟❤️"],
+            ["早安你好", "ㄗㄠˇ ㄢ ㄋㄧˇ ㄏㄠˇ", "☀️👋"]
         ];
 
         const zhuyinSymbols = [
@@ -232,7 +228,7 @@
         let currentQuestion = null;
         let flatTargetSequence = []; 
         let currentZhuyinIndex = 0; 
-        let charIndexMap = []; // ★ 新增：追蹤每個注音屬於第幾個國字
+        let charIndexMap = []; 
         
         const qImgContainer = document.getElementById('question-img-container');
         const wordDisplayContainer = document.getElementById('word-display-container');
@@ -272,7 +268,7 @@
             selectionArea.style.display = 'none';
             currentZhuyinIndex = 0;
             flatTargetSequence = [];
-            charIndexMap = []; // 重置對照表
+            charIndexMap = []; 
             wordDisplayContainer.innerHTML = '';
 
             const randomIndex = Math.floor(Math.random() * questionBank.length);
@@ -285,12 +281,12 @@
             }
 
             let globalSlotIndex = 0;
-            let currentCharGroupIndex = 0; // ★ 新增：目前建立到第幾個國字
+            let currentCharGroupIndex = 0; 
 
             currentQuestion.characters.forEach(charObj => {
                 const charGroup = document.createElement('div');
                 charGroup.className = 'char-group';
-                charGroup.id = `char-group-${currentCharGroupIndex}`; // 賦予 ID 方便選取
+                charGroup.id = `char-group-${currentCharGroupIndex}`; 
 
                 const charText = document.createElement('div');
                 charText.className = 'char-text';
@@ -307,7 +303,7 @@
                 charObj.zhuyin.forEach(zy => {
                     const isTone = toneSymbols.includes(zy);
                     flatTargetSequence.push(zy); 
-                    charIndexMap.push(currentCharGroupIndex); // 記錄這個注音屬於哪個國字
+                    charIndexMap.push(currentCharGroupIndex); 
 
                     const slot = document.createElement('div');
                     slot.className = 'slot';
@@ -344,17 +340,13 @@
                 currentCharGroupIndex++;
             });
 
-            // 遊戲開始，讓第一個字放大浮起
             updateActiveCharacterFocus(currentZhuyinIndex);
         }
 
-        // ★ 新增：更新浮起特效的函數 ★
         function updateActiveCharacterFocus(zhuyinIdx) {
-            // 先清除畫面上所有國字的浮起效果
             document.querySelectorAll('.char-group').forEach(el => {
                 el.classList.remove('active-char');
             });
-            // 找到目前該打的注音屬於哪個國字，並將該國字浮起
             if (zhuyinIdx < charIndexMap.length) {
                 const targetCharIndex = charIndexMap[zhuyinIdx];
                 const activeGroup = document.getElementById(`char-group-${targetCharIndex}`);
@@ -362,10 +354,8 @@
             }
         }
 
-        // ★ 新增：播放讚動畫的函數 ★
         function triggerThumbsUp() {
             thumbsUpFeedback.classList.remove('show-thumbs-up');
-            // 觸發重繪 (Reflow) 才能重複播放動畫
             void thumbsUpFeedback.offsetWidth; 
             thumbsUpFeedback.classList.add('show-thumbs-up');
         }
@@ -375,7 +365,7 @@
 
             const targetSymbol = flatTargetSequence[currentZhuyinIndex];
             const currentSlot = document.getElementById(`slot-${currentZhuyinIndex}`);
-            const previousCharIndex = charIndexMap[currentZhuyinIndex]; // 打字前的國字位置
+            const previousCharIndex = charIndexMap[currentZhuyinIndex]; 
 
             if (clickedSymbol === targetSymbol) {
                 currentSlot.classList.remove('target');
@@ -392,19 +382,16 @@
                 currentZhuyinIndex++;
 
                 if (currentZhuyinIndex < flatTargetSequence.length) {
-                    const newCharIndex = charIndexMap[currentZhuyinIndex]; // 打字後的國字位置
+                    const newCharIndex = charIndexMap[currentZhuyinIndex]; 
                     
-                    // ★ 判斷：如果換到下一個國字了，代表前一個字完成了！★
                     if (newCharIndex > previousCharIndex) {
-                        triggerThumbsUp(); // 彈出讚的圖示
+                        triggerThumbsUp(); 
                     }
 
                     document.getElementById(`slot-${currentZhuyinIndex}`).classList.add('target');
-                    updateActiveCharacterFocus(currentZhuyinIndex); // 讓下一個字浮起
+                    updateActiveCharacterFocus(currentZhuyinIndex); 
                 } else {
-                    // 整句打完時，也給一個讚！
                     triggerThumbsUp();
-                    // 稍微延遲一點進入選字畫面，讓學生看完讚的動畫
                     setTimeout(enterSelectionPhase, 1200); 
                 }
             } else {
