@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>注音符號視覺比對練習 (情境圖示版)</title>
+    <title>注音符號視覺比對練習 (語音防中斷版)</title>
     <style>
         /* 整體介面與視覺化設定 */
         body {
@@ -176,7 +176,7 @@
 
     <script>
         // ==========================================
-        // 老師出題區：★ 更新為更具情境的組合圖示 ★
+        // 老師出題區：10 題生活短句題庫
         // ==========================================
         const rawQuestions = [
             ["爸爸辛苦了", "ㄅㄚˋ ㄅㄚ˙ ㄒㄧㄣ ㄎㄨˇ ㄌㄜ˙", "👨‍💼💦"],
@@ -230,6 +230,9 @@
         let currentZhuyinIndex = 0; 
         let charIndexMap = []; 
         
+        // ★ 優化 1：宣告全域變數來保護語音物件，防止被瀏覽器強制回收 ★
+        let currentUtterance = null;
+        
         const qImgContainer = document.getElementById('question-img-container');
         const wordDisplayContainer = document.getElementById('word-display-container');
         const normalKeysArea = document.getElementById('normal-keys');
@@ -246,10 +249,10 @@
                 if (symbol === '空白') textToSpeak = '一聲';
                 if (symbol === '˙') textToSpeak = '輕聲';
 
-                const utterance = new SpeechSynthesisUtterance(textToSpeak);
-                utterance.lang = 'zh-TW';
-                utterance.rate = 0.9; 
-                window.speechSynthesis.speak(utterance);
+                currentUtterance = new SpeechSynthesisUtterance(textToSpeak);
+                currentUtterance.lang = 'zh-TW';
+                currentUtterance.rate = 0.9; 
+                window.speechSynthesis.speak(currentUtterance);
             }
         }
 
@@ -385,14 +388,16 @@
                     const newCharIndex = charIndexMap[currentZhuyinIndex]; 
                     
                     if (newCharIndex > previousCharIndex) {
-                        triggerThumbsUp(); 
+                        // ★ 優化 2：稍微延遲 0.15 秒再彈出讚的動畫，讓聲音先出來 ★
+                        setTimeout(triggerThumbsUp, 150); 
                     }
 
                     document.getElementById(`slot-${currentZhuyinIndex}`).classList.add('target');
                     updateActiveCharacterFocus(currentZhuyinIndex); 
                 } else {
-                    triggerThumbsUp();
-                    setTimeout(enterSelectionPhase, 1200); 
+                    setTimeout(triggerThumbsUp, 150);
+                    // 延遲選字畫面的出現，確保動畫播完
+                    setTimeout(enterSelectionPhase, 1350); 
                 }
             } else {
                 const qArea = document.getElementById('question-area');
