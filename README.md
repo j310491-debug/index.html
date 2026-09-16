@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>注音符號視覺比對練習 (生活短句版)</title>
+    <title>注音符號視覺比對練習 (字體優化版)</title>
     <style>
-        /* 整體介面與視覺化設定 */
+        /* 整體介面與視覺化設定：加入繁體中文標準字體 */
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Microsoft JhengHei', 'PingFang TC', 'Heiti TC', 'Segoe UI', Tahoma, sans-serif;
             background-color: #f0f4f8;
             margin: 0; padding: 10px;
             display: flex; flex-direction: column; align-items: center;
@@ -38,7 +38,6 @@
             margin-bottom: 5px; 
         }
 
-        /* ★ 新增 flex-wrap: wrap，讓長句子可以自動換行 ★ */
         #word-display-container {
             display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; width: 100%;
         }
@@ -222,7 +221,10 @@
             zhuyinSymbols.forEach(symbol => {
                 const btn = document.createElement('button');
                 btn.className = 'key-btn';
-                btn.innerText = symbol;
+                
+                // ★ 視覺替換邏輯：如果遇到注音「ㄧ」，強制顯示為中文橫線「一」 ★
+                btn.innerText = (symbol === 'ㄧ') ? '一' : symbol;
+                
                 btn.onclick = () => handleZhuyinClick(symbol);
                 normalKeysArea.appendChild(btn);
             });
@@ -270,7 +272,15 @@
                     const slot = document.createElement('div');
                     slot.className = 'slot';
                     slot.id = `slot-${globalSlotIndex}`;
-                    slot.innerText = (zy === '空白') ? '␣' : zy; 
+                    
+                    // ★ 視覺替換邏輯：空位上的提示也轉為中文橫線「一」 ★
+                    if (zy === '空白') {
+                        slot.innerText = '␣';
+                    } else if (zy === 'ㄧ') {
+                        slot.innerText = '一';
+                    } else {
+                        slot.innerText = zy;
+                    }
                     
                     if(globalSlotIndex === 0) slot.classList.add('target');
                     
@@ -303,7 +313,15 @@
             if (clickedSymbol === targetSymbol) {
                 currentSlot.classList.remove('target');
                 currentSlot.classList.add('filled');
-                currentSlot.innerText = (clickedSymbol === '空白') ? '' : clickedSymbol; 
+                
+                // ★ 視覺替換邏輯：學生點對後，格子內填入的也是中文橫線「一」 ★
+                if (clickedSymbol === '空白') {
+                    currentSlot.innerText = '';
+                } else if (clickedSymbol === 'ㄧ') {
+                    currentSlot.innerText = '一';
+                } else {
+                    currentSlot.innerText = clickedSymbol;
+                }
                 
                 currentZhuyinIndex++;
 
@@ -323,7 +341,6 @@
             keyboardArea.style.display = 'none';
             selectionArea.style.display = 'flex';
             
-            // 隱藏原本的句子
             wordDisplayContainer.innerHTML = '<div class="char-text" style="font-size: 4rem;">???</div>';
 
             let options = [currentQuestion.fullWord];
